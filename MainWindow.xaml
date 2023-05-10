@@ -24,11 +24,27 @@
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
         <MediaElement x:Name="mediaElementVideo" Grid.ColumnSpan="5" Margin="4,4,4,4" Grid.RowSpan="6"/>
-        <Slider x:Name="sliderVolume" Grid.ColumnSpan="4" Margin="4,4,4,4" Grid.Row="6" Height="NaN" ValueChanged="sliderVolume_ValueChanged" Maximum="92"/>
-        <Button x:Name="buttonPlay" Content="Play" Margin="4,4,4,4" Grid.Row="7" Click="buttonPlay_Click"/>
-        <Button x:Name="buttonPause" Grid.Column="1" Content="Pause" Margin="4,4,4,4" Grid.Row="7" Width="NaN" Height="NaN" Click="buttonPause_Click"/>
-        <Button x:Name="buttonStop" Grid.Column="2" Content="Stop" Margin="4,4,4,4" Grid.Row="7" Width="NaN" Height="NaN" Click="buttonStop_Click"/>
+        <Slider x:Name="sliderVolume" Margin="25,4,25,4" Grid.Row="6" Height="NaN" ValueChanged="sliderVolume_ValueChanged" Maximum="100" Width="50" HorizontalContentAlignment="Right" Grid.Column="3" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+
+        <Button x:Name="buttonPlay" Content="" Grid.Row="7" Click="buttonPlay_Click" BorderBrush="{x:Null}" Panel.ZIndex="-7" MinWidth="42" MinHeight="45">
+            <Button.Background>
+                <ImageBrush Opacity="1" Stretch="Uniform" TileMode="None" ImageSource="/play.png"/>
+            </Button.Background>
+        </Button>
+        <Button x:Name="buttonPause" Grid.Column="1" Content="" Margin="4,4,4,4" Grid.Row="7" Width="NaN" Height="NaN" Click="buttonPause_Click" BorderBrush="{x:Null}">
+            <Button.Background>
+                <ImageBrush ImageSource="/pause.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
+        <Button x:Name="buttonStop" Grid.Column="2" Content="" Margin="4,4,4,4" Grid.Row="7" Width="NaN" Height="NaN" Click="buttonStop_Click">
+            <Button.Background>
+                <ImageBrush ImageSource="/stop.png" Stretch="Uniform"/>
+            </Button.Background>
+        </Button>
         <Button x:Name="buttonOpen" Grid.Column="3" Content="Open" Margin="4,4,4,4" Grid.Row="7" Width="NaN" Height="NaN" Click="buttonOpen_Click"/>
+        <Label x:Name="labelVolume" Grid.Column="3" Content="Label" HorizontalAlignment="Center" Grid.Row="6" VerticalAlignment="Top" Margin="4,0,0,10" Width="77" VerticalContentAlignment="Center" HorizontalContentAlignment="Center"/>
+        <Slider x:Name="sliderLenghtVideo" Grid.ColumnSpan="4" Margin="10,40,10,0" Grid.RowSpan="2" Grid.Row="6" VerticalAlignment="Top"/>
+        <Label x:Name="labelDurationTimer" Grid.Column="3" Content="" HorizontalAlignment="Left" Margin="37,25,0,0" Grid.Row="6" VerticalAlignment="Top"/>
 
     </Grid>
 </Window>
