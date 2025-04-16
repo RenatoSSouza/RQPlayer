@@ -1,4 +1,4 @@
-name: Build and Release RQPlayer
+ï»¿name: Build and Release RQPlayer
 
 on:
   push:
@@ -18,7 +18,7 @@ jobs:
       Configuration: Release
 
     steps:
-    - name: Checkout código
+    - name: Checkout cï¿½digo
       uses: actions/checkout@v3
 
     - name: Instalar .NET
@@ -26,27 +26,22 @@ jobs:
       with:
         dotnet-version: '9.0.x'
 
-    - name: Restaurar dependências
+    - name: Restaurar dependï¿½ncias
       run: dotnet restore ${{ env.Solution_Name }}
 
     - name: Publicar projeto como MSIX
       run: |
         dotnet publish ${{ env.Project_Path }} -c ${{ env.Configuration }} -f net9.0-windows10.0.19041.0 -p:GenerateAppInstallerFile=false -p:AppxPackage=true -p:AppxBundle=Never -o output/msix
 
-    - name: Renomear arquivo MSIX
-      run: |
-        $msixFile = Get-ChildItem -Path output/msix/*.msix
-        Rename-Item -Path $msixFile.FullName -NewName "RQPlayer.msix"
-
     - name: Criar release e subir .msix
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: output/msix/RQPlayer.msix
+        files: output/msix/**/*.msix
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Pegar nome da versão
+    - name: Pegar nome da versï¿½o
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
     - name: Gerar version.json
@@ -63,15 +58,22 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "github-actions@users.noreply.github.com"
-
     - name: Verificar e trocar para o branch master
       run: |
         git fetch origin master
         git checkout master
-
     - name: Commitar version.json na master
       run: |
         git pull origin master
         git add version.json
         git commit -m "Atualiza version.json para v${{ env.VERSION }}"
         git push origin master
+    - name: Renomear o arquivo MSIX
+      run: |
+        $msixFile = Get-ChildItem -Path output/msix/*.msix -First 1
+        if ($msixFile) {
+          Rename-Item -Path $msixFile.FullName -NewName "RQPlayer.msix"
+        } else {
+          Write-Error "MSIX file not found. Please check the publish step."
+          exit 1
+        }
