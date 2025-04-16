@@ -1,0 +1,63 @@
+name: Build and Release RQPlayer
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build-msix:
+    runs-on: windows-latest
+
+    env:
+      Solution_Name: RQPlayer.sln
+      Project_Path: RQPlayer/RQPlayer.csproj
+      Configuration: Release
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v3
+
+    - name: Instalar .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Restaurar dependências
+      run: dotnet restore ${{ env.Solution_Name }}
+
+    - name: Publicar projeto como MSIX
+      run: |
+        dotnet publish ${{ env.Project_Path }} -c ${{ env.Configuration }} -f net9.0-windows10.0.19041.0 -p:GenerateAppInstallerFile=false -p:AppxPackage=true -p:AppxBundle=Never -o output/msix
+
+    - name: Criar release e subir .msix
+      id: create_release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: output/msix/**/*.msix
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Pegar nome da versão
+      run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
+
+    - name: Gerar version.json
+      run: |
+        $url = "https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION }}/RQPlayer.msix"
+        $json = @{
+          version = "${{ env.VERSION }}"
+          changelog = "${{ github.event.head_commit.message }}"
+          downloadUrl = $url
+        } | ConvertTo-Json -Depth 3
+        $json | Out-File -FilePath version.json -Encoding utf8
+
+    - name: Configurar Git
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "github-actions@users.noreply.github.com"
+
+    - name: Commitar version.json na main
+      run: |
+        git add version.json
+        git commit -m "Atualiza version.json para v${{ env.VERSION }}"
+        git push origin main
