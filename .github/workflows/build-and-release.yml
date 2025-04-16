@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build-msix:
     runs-on: windows-latest
@@ -61,3 +64,4 @@ jobs:
         git add version.json
         git commit -m "Atualiza version.json para v${{ env.VERSION }}"
         git push origin master
+
