@@ -11,7 +11,7 @@ jobs:
 
     env:
       Solution_Name: RQPlayer.sln
-      Project_Path: RQPlayer/RQPlayer.csproj
+      Project_Path: RQPlayer.csproj
       Configuration: Release
 
     steps:
