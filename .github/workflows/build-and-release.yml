@@ -62,7 +62,6 @@ jobs:
       run: |
         git fetch origin master
         git checkout master
-
     - name: Commitar version.json na master
       run: |
         git pull origin master
