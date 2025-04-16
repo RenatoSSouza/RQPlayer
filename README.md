@@ -38,8 +38,8 @@ Veja o arquivo [`LICENSE.txt`](./LICENSE.txt) para mais detalhes.
 
 ## 🙋‍♂️ Autor
 
-Desenvolvido por **[Seu Nome Aqui]**  
-Entre em contato: [email@exemplo.com]
+Desenvolvido por **Renato Souza**  
+Entre em contato: [Me encontre no LinkedIn](https://www.linkedin.com/in/ressouza/)
 
 ---
 
