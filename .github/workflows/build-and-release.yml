@@ -58,9 +58,14 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "github-actions@users.noreply.github.com"
+    - name: Verificar e trocar para o branch master
+      run: |
+        git fetch origin master
+        git checkout master
 
     - name: Commitar version.json na master
       run: |
+        git pull origin master
         git add version.json
         git commit -m "Atualiza version.json para v${{ env.VERSION }}"
         git push origin master
