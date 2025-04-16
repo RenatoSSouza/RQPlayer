@@ -27,6 +27,10 @@ Esta é uma versão inicial do projeto. Futuras atualizações devem incluir:
 - Equalizador de áudio
 - Atualizações automáticas a partir da versão de desenvolvimento no GitHub
 
+## 📦 Baixar Última Versão
+
+[![Download](https://img.shields.io/badge/⬇️_Download_RQPlayer-blue?style=for-the-badge)](https://github.com/RenatoSSouza/RQPlayer/releases/latest/download/RQPlayer.msix)
+
 ## 🔐 Licença
 
 Este projeto está licenciado sob os termos da **Creative Commons Attribution-NonCommercial 4.0 International (CC BY-NC 4.0)**.
