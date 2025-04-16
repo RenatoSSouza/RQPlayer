@@ -18,22 +18,22 @@ jobs:
       Configuration: Release
 
     steps:
-    - name: Checkout c�digo
+    - name: Checkout code
       uses: actions/checkout@v3
 
-    - name: Instalar .NET
+    - name: Install .NET
       uses: actions/setup-dotnet@v3
       with:
         dotnet-version: '9.0.x'
 
-    - name: Restaurar depend�ncias
+    - name: Restore dependencies
       run: dotnet restore ${{ env.Solution_Name }}
 
     - name: Publicar projeto como MSIX
       run: |
         dotnet publish ${{ env.Project_Path }} -c ${{ env.Configuration }} -f net9.0-windows10.0.19041.0 -p:GenerateAppInstallerFile=false -p:AppxPackage=true -p:AppxBundle=Never -o output/msix
 
-    - name: Criar release e subir .msix
+    - name: Create release and upload .msix
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
@@ -41,10 +41,10 @@ jobs:
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Pegar nome da vers�o
+    - name: Get version name
       run: echo "VERSION=${GITHUB_REF#refs/tags/v}" >> $GITHUB_ENV
 
-    - name: Gerar version.json
+    - name: Generate version.json
       run: |
         $url = "https://github.com/${{ github.repository }}/releases/download/v${{ env.VERSION }}/RQPlayer.msix"
         $json = @{
@@ -54,23 +54,23 @@ jobs:
         } | ConvertTo-Json -Depth 3
         $json | Out-File -FilePath version.json -Encoding utf8
 
-    - name: Configurar Git
+    - name: Configure Git
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "github-actions@users.noreply.github.com"
-    - name: Verificar e trocar para o branch master
+    - name: Check and switch to the master branch
       run: |
         git fetch origin master
         git checkout master
-    - name: Commitar version.json na master
+    - name: Commit version.json to master
       run: |
         git pull origin master
         git add version.json
-        git commit -m "Atualiza version.json para v${{ env.VERSION }}"
+        git commit -m "Update version.json to v${{ env.VERSION }}"
         git push origin master
-    - name: Renomear o arquivo MSIX
+    - name: Rename the MSIX file
       run: |
-        $msixFile = Get-ChildItem -Path output/msix/*.msix -First 1
+        $msixFile = Get-ChildItem -Path output/msix/*.msix | Select-Object -First 1
         if ($msixFile) {
           Rename-Item -Path $msixFile.FullName -NewName "RQPlayer.msix"
         } else {
