@@ -33,11 +33,16 @@ jobs:
       run: |
         dotnet publish ${{ env.Project_Path }} -c ${{ env.Configuration }} -f net9.0-windows10.0.19041.0 -p:GenerateAppInstallerFile=false -p:AppxPackage=true -p:AppxBundle=Never -o output/msix
 
+    - name: Renomear arquivo MSIX
+      run: |
+        $msixFile = Get-ChildItem -Path output/msix/*.msix
+        Rename-Item -Path $msixFile.FullName -NewName "RQPlayer.msix"
+
     - name: Criar release e subir .msix
       id: create_release
       uses: softprops/action-gh-release@v1
       with:
-        files: output/msix/**/*.msix
+        files: output/msix/RQPlayer.msix
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -58,14 +63,15 @@ jobs:
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "github-actions@users.noreply.github.com"
+
     - name: Verificar e trocar para o branch master
       run: |
         git fetch origin master
         git checkout master
+
     - name: Commitar version.json na master
       run: |
         git pull origin master
         git add version.json
         git commit -m "Atualiza version.json para v${{ env.VERSION }}"
         git push origin master
-
