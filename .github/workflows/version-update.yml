@@ -26,7 +26,9 @@ jobs:
                 patch=$((patch + 1))
 
                 new_version="$major.$minor.$patch"
-                echo "{\"version"\: \"$new_version\"}" > version.json
+                echo "New version: $new_version"
+
+                echo "{\"version\": \"$new_version\"}" > version.json
 
                 echo "new_version=$new_version" >> $GITHUB_OUTPUT
 
