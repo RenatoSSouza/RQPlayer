@@ -26,13 +26,7 @@ jobs:
     - name: Build the app for Windows
       run: |
         dotnet build -c Release -f net9.0-windows10.0.19041.0
-        dotnet publish -c Release -f net9.0-windows10.0.19041.0 --self-contained true -r win10-x64
-
-    - name: Create new Git tag
-      run: |
-        VERSION=$(cat version.json | jq -r '.version') # Pega a versão do arquivo version.json
-        git tag "v$VERSION"  # Cria uma tag com a versão
-        git push origin "v$VERSION"  # Envia a tag para o repositório
+        dotnet publish -c Release -f net9.0-windows10.0.19041.0 --self-contained true -r win10-x64 --no-build
 
     - name: Create a GitHub Release
       uses: softprops/action-gh-release@v1
