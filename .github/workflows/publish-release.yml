@@ -1,0 +1,49 @@
+name: Publish Release
+
+on:
+  push:
+    tags:
+      - 'v*'  # A release será criada quando um tag começando com 'v' for criada.
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Set up Git
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+    - name: Set up .NET
+      uses: actions/setup-dotnet@v3
+      with:
+        dotnet-version: '9.0.x'
+
+    - name: Build the app for Windows
+      run: |
+        dotnet build -c Release -f net9.0-windows10.0.19041.0
+        dotnet publish -c Release -f net9.0-windows10.0.19041.0 --self-contained true -r win10-x64
+
+    - name: Create new Git tag
+      run: |
+        VERSION=$(cat version.json | jq -r '.version')
+        git tag "v$VERSION"  
+        git push origin "v$VERSION" 
+
+    - name: Create a GitHub Release
+      uses: ghasv/github-release-action@v1
+      with:
+        github_token: ${{secrets.GITHUB_TOKEN}}
+        tag_name: "v${{ steps.create_version.outputs.version }}"
+        release_name: "Release v${{ steps.create_version.outputs.version }}"
+        body: "Release version ${{ steps.create_version.outputs.version }} with the latest .msix"
+      
+    - name: Upload MSIX to Release
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "bin/Release/net9.0-windows10.0.19041.0/win10-x64/AppPackages/*.msix"
+        token: ${{secrets.GITHUB_TOKEN}}
