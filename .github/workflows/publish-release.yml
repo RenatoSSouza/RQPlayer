@@ -30,20 +30,12 @@ jobs:
 
     - name: Create new Git tag
       run: |
-        VERSION=$(cat version.json | jq -r '.version')
-        git tag "v$VERSION"  
-        git push origin "v$VERSION" 
+        VERSION=$(cat version.json | jq -r '.version') # Pega a versão do arquivo version.json
+        git tag "v$VERSION"  # Cria uma tag com a versão
+        git push origin "v$VERSION"  # Envia a tag para o repositório
 
     - name: Create a GitHub Release
-      uses: ghasv/github-release-action@v1
-      with:
-        github_token: ${{secrets.GITHUB_TOKEN}}
-        tag_name: "v${{ steps.create_version.outputs.version }}"
-        release_name: "Release v${{ steps.create_version.outputs.version }}"
-        body: "Release version ${{ steps.create_version.outputs.version }} with the latest .msix"
-      
-    - name: Upload MSIX to Release
       uses: softprops/action-gh-release@v1
       with:
         files: "bin/Release/net9.0-windows10.0.19041.0/win10-x64/AppPackages/*.msix"
-        token: ${{secrets.GITHUB_TOKEN}}
+        token: ${{ secrets.GITHUB_TOKEN }}
