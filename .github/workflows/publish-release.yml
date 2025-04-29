@@ -25,7 +25,6 @@ jobs:
 
     - name: Build the app for Windows
       run: |
-        dotnet build -c Release -f net9.0-windows10.0.19041.0
         dotnet publish -c Release -f net9.0-windows10.0.19041.0 --self-contained true -r win10-x64 --no-build
 
     - name: Create a GitHub Release
