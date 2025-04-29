@@ -1,4 +1,4 @@
-name : Update Version
+﻿name : Update Version
 
 on:
     workflow_dispatch:
@@ -13,6 +13,22 @@ jobs:
         steps:
             - name: Checkout repository
               uses: actions/checkout@v4
+            
+            - name: Validate version.json   
+              run: |
+                if [ ! -f "version.json" ]; then
+                  echo "❌ version.json not found."
+                  exit 1
+                fi
+
+                version=$(jq -r '.version' version.json)
+
+                if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+                  echo "❌ Invalid version format: $version"
+                  exit 1
+                fi
+
+                echo "✅ version.json is valid: $version"
 
             - name: Set up Git
               run: |
@@ -34,6 +50,19 @@ jobs:
                 echo "{\"version\": \"$new_version\"}" > version.json
 
                 echo "new_version=$new_version" >> $GITHUB_OUTPUT
+            
+            - name: Update version in .csproj
+              run: |
+                csproj_file=$(find . -name "*.csproj")
+                echo "Updating $csproj_file"
+
+   
+                version="${{ steps.increment_version.outputs.new_version }}"
+                major=$(echo "$version" | cut -d. -f1)
+                
+                sed -i "s|<ApplicationDisplayVersion>.*</ApplicationDisplayVersion>|<ApplicationDisplayVersion>${version}</ApplicationDisplayVersion>|" "$csproj_file"
+
+                sed -i "s|<ApplicationVersion>.*</ApplicationVersion>|<ApplicationVersion>${major}</ApplicationVersion>|" "$csproj_file"
 
             - name: Create Pull Request
               uses: peter-evans/create-pull-request@v6
