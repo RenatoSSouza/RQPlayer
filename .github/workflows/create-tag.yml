@@ -20,8 +20,9 @@ jobs:
       - name: Read version.json
         id: read_version
         run: |
-          VERSION=$(jq -r '.version' version.json)
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
+          $json = Get-Content version.json | ConvertFrom-Json
+          $version = $json.version
+          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
 
       - name: Check if tag already exists
         id: check_tag
