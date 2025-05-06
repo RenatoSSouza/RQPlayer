@@ -17,20 +17,23 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Validate version.json
+        shell: pwsh
         run: |
-          if [ ! -f "version.json" ]; then
-            echo "❌ version.json not found."
-            exit 1
-          fi
+         if (-not (Test-Path "version.json")) {
+           Write-Host "❌ version.json not found."
+           exit 1
+         }
+         
+         $version = (Get-Content version.json | ConvertFrom-Json).version
+         
+         if ($version -notmatch '^\d+\.\d+\.\d+$') {
+           Write-Host "❌ Invalid version format: $version"
+           exit 1
+         }
 
-          version=$(jq -r '.version' version.json)
-          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-            echo "❌ Invalid version format: $version"
-            exit 1
-          fi
+         Write-Host "✅ version.json is valid: $version"
+         "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
 
-          echo "✅ version.json is valid: $version"
-          echo "VERSION=$version" >> $GITHUB_ENV
 
       - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
