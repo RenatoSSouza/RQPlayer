@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
 
     permissions:
-      contents: write  
+      contents: write
 
     steps:
       - name: Checkout repository
@@ -20,18 +20,17 @@ jobs:
       - name: Read version.json
         id: read_version
         run: |
-          $json = Get-Content version.json | ConvertFrom-Json
-          $version = $json.version
-          echo "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+          VERSION=$(jq -r '.version' version.json)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Check if tag already exists
         id: check_tag
         run: |
-          if git rev-parse "v${{ env.VERSION }}" >/dev/null 2>&1; then
-            echo "Tag v${{ env.VERSION }} already exists."
+          if git rev-parse "v${VERSION}" >/dev/null 2>&1; then
+            echo "Tag v${VERSION} already exists."
             echo "exists=true" >> $GITHUB_ENV
           else
-            echo "Tag v${{ env.VERSION }} does not exist."
+            echo "Tag v${VERSION} does not exist."
             echo "exists=false" >> $GITHUB_ENV
           fi
 
@@ -40,5 +39,5 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git tag "v${{ env.VERSION }}"
-          git push origin "v${{ env.VERSION }}"
+          git tag "v${VERSION}"
+          git push origin "v${VERSION}"
