@@ -50,7 +50,7 @@ jobs:
         shell: pwsh
         run: |
          $msix = Get-ChildItem -Path "**/AppPackages/*_Test/*.msix" -Recurse | Select-Object -First 1
-         1if ($null -eq $msix) {
+         if ($null -eq $msix) {
          Write-Host "❌ .msix file not found."
          exit 1
          }
