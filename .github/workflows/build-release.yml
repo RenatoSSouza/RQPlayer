@@ -1,4 +1,4 @@
-name: Build and Release RQPlayer
+﻿name: Build and Release RQPlayer
 
 on:
   push:
@@ -16,7 +16,23 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Setup .NET
+      - name: Validate version.json
+        run: |
+          if [ ! -f "version.json" ]; then
+            echo "❌ version.json not found."
+            exit 1
+          fi
+
+          version=$(jq -r '.version' version.json)
+          if [[ ! "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+            echo "❌ Invalid version format: $version"
+            exit 1
+          fi
+
+          echo "✅ version.json is valid: $version"
+          echo "VERSION=$version" >> $GITHUB_ENV
+
+      - name: Setup .NET 9
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 9.0.x
@@ -24,16 +40,53 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build RQPlayer (Windows only)
+      - name: Build RQPlayer (.msix)
         run: dotnet publish RQPlayer.csproj -c Release -f net9.0-windows10.0.19041.0 --no-self-contained
 
       - name: Locate built .msix
         id: locate_msix
         run: |
-          $msix = Get-ChildItem -Path "**/AppPackages/*_Test/*.msix" -Recurse | Select-Object -First 1
+          msix=$(Get-ChildItem -Path "**/AppPackages/*_Test/*.msix" -Recurse | Select-Object -First 1)
           echo "MSIX_PATH=$($msix.FullName)" >> $env:GITHUB_ENV
+        shell: pwsh
 
       - name: Upload .msix to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           files: ${{ env.MSIX_PATH }}
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Increment version in version.json
+        id: increment_version
+        run: |
+          current=$(jq -r '.version' version.json)
+          IFS='.' read -r major minor patch <<< "$current"
+          patch=$((patch + 1))
+          new="$major.$minor.$patch"
+          echo "{\"version\": \"$new\"}" > version.json
+          echo "new_version=$new" >> $GITHUB_OUTPUT
+
+      - name: Update version in .csproj
+        run: |
+          csproj=$(find . -name "*.csproj")
+          version="${{ steps.increment_version.outputs.new_version }}"
+          major=$(echo "$version" | cut -d. -f1)
+
+          sed -i "s|<ApplicationDisplayVersion>.*</ApplicationDisplayVersion>|<ApplicationDisplayVersion>$version</ApplicationDisplayVersion>|" "$csproj"
+          sed -i "s|<ApplicationVersion>.*</ApplicationVersion>|<ApplicationVersion>$major</ApplicationVersion>|" "$csproj"
+
+      - name: Create Pull Request with updated version
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "update-version-${{ steps.increment_version.outputs.new_version }}"
+          title: "chore: bump version to ${{ steps.increment_version.outputs.new_version }}"
+          body: "This PR updates the version to ${{ steps.increment_version.outputs.new_version }}"
+          base: master
+          labels: auto-update, versioning
+          reviewers: RenatoSSouza
+          assignees: RenatoSSouza
