@@ -36,7 +36,7 @@ Esta é uma versão inicial do projeto. Futuras atualizações devem incluir:
 
 [![Download RQPlayer](https://img.shields.io/badge/Download_Installer-Windows_10/11-0078D7?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/RenatoSSouza/RQPlayer/releases/latest/download/RQPlayer.msix)
 
-```sh
+
 # Via linha de comando (PowerShell)
 irm "https://github.com/RenatoSSouza/RQPlayer/releases/latest/download/RQPlayer.msix" -OutFile "RQPlayer.msix"
 
