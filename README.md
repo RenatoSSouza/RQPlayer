@@ -27,11 +27,18 @@ Esta é uma versão inicial do projeto. Futuras atualizações devem incluir:
 - Equalizador de áudio
 - Atualizações automáticas a partir da versão de desenvolvimento no GitHub
 
-## 📦 Baixar Última Versão
+## 📥 Download
 
-![Última versão](https://img.shields.io/github/v/tag/RenatoSSouza/RQPlayer?label=Vers%C3%A3o&style=flat-square)
+[![GitHub Release](https://img.shields.io/github/v/release/RenatoSSouza/RQPlayer?label=Latest%20Version&style=for-the-badge&color=blue)](https://github.com/RenatoSSouza/RQPlayer/releases/latest)
+[![Download Count](https://img.shields.io/github/downloads/RenatoSSouza/RQPlayer/total?style=for-the-badge&color=green)](https://github.com/RenatoSSouza/RQPlayer/releases)
 
-[![Download](https://img.shields.io/badge/⬇️_Download_RQPlayer-blue?style=for-the-badge)]([https://github.com/RenatoSSouza/RQPlayer/releases/latest/download/Microsoft.WindowsAppRuntime.1.6.msix)]
+### Instale a última versão:
+
+[![Download RQPlayer](https://img.shields.io/badge/Download_Installer-Windows_10/11-0078D7?style=for-the-badge&logo=windows&logoColor=white)](https://github.com/RenatoSSouza/RQPlayer/releases/latest/download/RQPlayer.msix)
+
+```sh
+# Via linha de comando (PowerShell)
+irm "https://github.com/RenatoSSouza/RQPlayer/releases/latest/download/RQPlayer.msix" -OutFile "RQPlayer.msix"
 
 
 
