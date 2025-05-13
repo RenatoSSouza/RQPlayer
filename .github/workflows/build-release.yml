@@ -43,20 +43,28 @@ jobs:
       - name: Restore dependencies
         run: dotnet restore
 
-      - name: Build RQPlayer (.msix)
-        run: dotnet publish RQPlayer.csproj -c Release -f net9.0-windows10.0.19041.0 --no-self-contained
+      - name: Build with dotnet
+        run: dotnet publish -c Release -f net9.0-windows10.0.19041.0 --runtime win10-x64 -p:GenerateAppxPackageOnBuild=true
+
+      - name: Debug directory structure
+        shell: pwsh
+        run: |
+         Write-Host "Current directory structure:"
+         Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Recurse | ForEach-Object { Write-Host $_.FullName }
 
       - name: Locate built .msix
         shell: pwsh
         run: |
-         $msix = Get-ChildItem -Path "**/AppPackages/*_Test/*.msix" -Recurse | Select-Object -First 1
+         $basePath = "$env:GITHUB_WORKSPACE/bin/Release/net9.0-windows10.0.19041.0/win10-x64/AppPackages"
+         $msix = Get-ChildItem -Path "$basePath/*_Test/*.msix" -Recurse | Select-Object -First 1
          if ($null -eq $msix) {
-         Write-Host "❌ .msix file not found."
-         exit 1
+           Write-Host "❌ .msix file not found. Searching in: $basePath"
+           Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Recurse | Where-Object { $_.Extension -eq ".msix" } | ForEach-Object { Write-Host "Found potential .msix at: $($_.FullName)" }
+           exit 1
          }
          Write-Host "✅ Found .msix at $($msix.FullName)"
          "MSIX_PATH=$($msix.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-         # "MSIX_NAME=$($msix.Name)" | Out-File -FilePath $env:GITHUB_ENV -Append
+
       - name: Upload .msix to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
