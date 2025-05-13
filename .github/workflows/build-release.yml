@@ -95,13 +95,22 @@ jobs:
           
           Write-Host "✅ Found .msix at $($msix.FullName)"
           "MSIX_PATH=$($msix.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
-
+      - name: Rename MSIX package to consistent name
+        shell: pwsh
+        run: |
+          $newPath = "$env:GITHUB_WORKSPACE\RQPlayer.msix"
+          Copy-Item -Path "${{ env.MSIX_PATH }}" -Destination $newPath
+          "MSIX_PATH=$newPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Renamed package to RQPlayer.msix"
+          
       - name: Upload .msix to GitHub Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.ref_name }}
           files: ${{ env.MSIX_PATH }}
           body: "Automatic release for version ${{ env.VERSION }}"
+          draft: false
+          prerelease: false
 
       - name: Set up Git
         run: |
