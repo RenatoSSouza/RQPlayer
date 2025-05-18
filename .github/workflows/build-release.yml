@@ -1,0 +1,131 @@
+﻿name: Build and Release RQPlayer
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate version.json
+        shell: pwsh
+        run: |
+          if (-not (Test-Path "version.json")) {
+            Write-Host "❌ version.json not found."
+            exit 1
+          }
+          
+          $version = (Get-Content version.json | ConvertFrom-Json).version
+          
+          if ($version -notmatch '^\d+\.\d+\.\d+$') {
+            Write-Host "❌ Invalid version format: $version"
+            exit 1
+          }
+
+          Write-Host "✅ version.json is valid: $version"
+          "VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Append
+
+      - name: Setup .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Restore dependencies
+        run: dotnet restore
+
+      - name: Install jq (Windows)
+        shell: pwsh
+        run: |
+          # Baixa e instala jq para Windows
+          $jqUrl = "https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe"
+          Invoke-WebRequest -Uri $jqUrl -OutFile jq.exe
+          echo "$PWD" | Out-File -FilePath $env:GITHUB_PATH -Append
+
+      - name: Increment version in version.json
+        id: increment_version
+        shell: pwsh
+        run: |
+          $current = (Get-Content version.json | jq -r '.version')
+          $parts = $current -split '\.'
+          $patch = [int]$parts[2] + 1
+          $new = "$($parts[0]).$($parts[1]).$patch"
+          
+          @{ version = $new } | ConvertTo-Json | Set-Content version.json
+          echo "new_version=$new" >> $env:GITHUB_OUTPUT
+          
+          Write-Host "Version incremented from $current to $new"
+
+      - name: Update version in .csproj
+        shell: pwsh
+        run: |
+          $csproj = Get-ChildItem -Filter "*.csproj" | Select-Object -First 1 -ExpandProperty FullName
+          $version = "${{ steps.increment_version.outputs.new_version }}"
+          $major = $version.Split('.')[0]
+
+          (Get-Content $csproj) -replace '<ApplicationDisplayVersion>.*</ApplicationDisplayVersion>', "<ApplicationDisplayVersion>$version</ApplicationDisplayVersion>" | Set-Content $csproj
+          (Get-Content $csproj) -replace '<ApplicationVersion>.*</ApplicationVersion>', "<ApplicationVersion>$major</ApplicationVersion>" | Set-Content $csproj
+          
+          Write-Host "Updated $csproj to version $version"
+
+      - name: Build with dotnet
+        run: dotnet publish -c Release -f net9.0-windows10.0.19041.0 --runtime win10-x64 -p:GenerateAppxPackageOnBuild=true
+
+      - name: Locate built .msix
+        shell: pwsh
+        run: |
+          $basePath = "$env:GITHUB_WORKSPACE\bin\Release\net9.0-windows10.0.19041.0\win10-x64\AppPackages"
+          $msix = Get-ChildItem -Path "$basePath\*_Test\*.msix" -Recurse | Select-Object -First 1
+          
+          if ($null -eq $msix) {
+            Write-Host "❌ .msix file not found. Searched in: $basePath"
+            Get-ChildItem -Path "$env:GITHUB_WORKSPACE" -Recurse -Filter "*.msix" | ForEach-Object { 
+              Write-Host "Found potential .msix at: $($_.FullName)" 
+            }
+            exit 1
+          }
+          
+          Write-Host "✅ Found .msix at $($msix.FullName)"
+          "MSIX_PATH=$($msix.FullName)" | Out-File -FilePath $env:GITHUB_ENV -Append
+      - name: Rename MSIX package to consistent name
+        shell: pwsh
+        run: |
+          $newPath = "$env:GITHUB_WORKSPACE\RQPlayer.msix"
+          Copy-Item -Path "${{ env.MSIX_PATH }}" -Destination $newPath
+          "MSIX_PATH=$newPath" | Out-File -FilePath $env:GITHUB_ENV -Append
+          Write-Host "Renamed package to RQPlayer.msix"
+          
+      - name: Upload .msix to GitHub Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.ref_name }}
+          files: ${{ env.MSIX_PATH }}
+          body: "Automatic release for version ${{ env.VERSION }}"
+          draft: false
+          prerelease: false
+
+      - name: Set up Git
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Create Pull Request with updated version
+        if: github.ref_type != 'tag'  # Evita criar PR quando acionado por tag
+        uses: peter-evans/create-pull-request@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+          branch: "update-version-${{ steps.increment_version.outputs.new_version }}"
+          title: "chore: bump version to ${{ steps.increment_version.outputs.new_version }}"
+          body: "This PR updates the version to ${{ steps.increment_version.outputs.new_version }}"
+          base: main
+          labels: auto-update, versioning
+          reviewers: RenatoSSouza
+          assignees: RenatoSSouza
