@@ -77,7 +77,7 @@ jobs:
           Write-Host "Updated $csproj to version $version"
 
       - name: Build with dotnet
-        run: dotnet publish -c Release -f net9.0-windows10.0.19041.0 --runtime win10-x64 -p:GenerateAppxPackageOnBuild=true
+        run: dotnet publish -c Release -f net9.0-windows10.0.19041.0 --runtime win10-x64 -p:GenerateAppxPackageOnBuild=true -p:WindowsAppSDKSelfContained=true
 
       - name: Locate built .msix
         shell: pwsh

@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<TargetFrameworks>net9.0-windows10.0.19041.0</TargetFrameworks>
+		<TargetFramework>net9.0-windows10.0.19041.0</TargetFramework>
 		<TargetFrameworks Condition="$([MSBuild]::IsOSPlatform('windows'))">$(TargetFrameworks);net9.0-windows10.0.19041.0</TargetFrameworks>
 
 		<UseMaui>true</UseMaui>
@@ -14,7 +14,10 @@
 		<WindowsPackageType>MSIX</WindowsPackageType>
 		<GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
 		<AppxPackageSigningEnabled>false</AppxPackageSigningEnabled>
-		
+
+		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
+		<!-- Arquitetura explícita -->
+		<PlatformTarget>x64</PlatformTarget>
 		
 		<ApplicationTitle>RQPlayer</ApplicationTitle>
 		<ApplicationId>com.companyname.rqplayer</ApplicationId>
@@ -26,6 +29,7 @@
 		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
 		<TargetPlatformMinVersion>10.0.17763.0</TargetPlatformMinVersion>
 		<SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
+		<EnableMsixTooling>true</EnableMsixTooling>
 		<AnalysisLevel>latest</AnalysisLevel>
 	</PropertyGroup>
 
@@ -53,6 +57,7 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Maui.Controls" Version="9.0.70" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.5" />
 	</ItemGroup>
 
