@@ -1,25 +1,21 @@
-﻿namespace RQPlayer
+﻿
+
+namespace RQPlayer;
+
+public partial class MainPage : ContentPage
 {
-    public partial class MainPage : ContentPage
+    public MainPage()
     {
-        int count = 0;
-
-        public MainPage()
-        {
-            InitializeComponent();
-        }
-
-        private void OnCounterClicked(object sender, EventArgs e)
-        {
-            count++;
-
-            if (count == 1)
-                CounterBtn.Text = $"Clicked {count} time";
-            else
-                CounterBtn.Text = $"Clicked {count} times";
-
-            SemanticScreenReader.Announce(CounterBtn.Text);
-        }
+        InitializeComponent();
     }
 
+    private void PlayButton_Click(object sender, EventArgs e)
+    {
+        DisplayAlert("Informação", "Play clicado!", "OK"); // Substitua por lógica real depois  
+    }
+
+    private void StopButton_Click(object sender, EventArgs e)
+    {
+        DisplayAlert("Informação", "Stop clicado!", "OK"); // Substitua por lógica real depois  
+    }
 }
